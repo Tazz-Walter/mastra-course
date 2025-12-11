@@ -1,0 +1,5 @@
+Lista de compras para el supermercado:
+1. Mayonesa
+2. Pan
+3. Bifes
+4. Verduras
