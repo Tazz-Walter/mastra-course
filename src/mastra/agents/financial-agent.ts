@@ -14,13 +14,13 @@ const smitheryApiKey = process.env.SMITHERY_API_KEY;
 const smitheryProfile = process.env.SMITHERY_PROFILE;
 const smitheryGithubUrlEnv = process.env.SMITHERY_GITHUB_MCP_URL;
 
-const smitheryGithubMcpUrl =
-  smitheryGithubUrlEnv ||
-  (smitheryApiKey && smitheryProfile
-    ? `https://server.smithery.ai/github/mcp?api_key=${encodeURIComponent(
-        smitheryApiKey,
-      )}&profile=${encodeURIComponent(smitheryProfile)}`
-    : null);
+// const smitheryGithubMcpUrl =
+//   smitheryGithubUrlEnv ||
+//   (smitheryApiKey && smitheryProfile
+//     ? `https://server.smithery.ai/github/mcp?api_key=${encodeURIComponent(
+//         smitheryApiKey,
+//       )}&profile=${encodeURIComponent(smitheryProfile)}`
+//     : null);
 
 const mcpServers: Record<string, any> = {};
 
@@ -36,11 +36,18 @@ if (zapierMcpToken) {
   };
 }
 
-if (smitheryGithubMcpUrl) {
-  mcpServers.github = {
-    url: new URL(smitheryGithubMcpUrl),
-  };
-}
+// if (smitheryGithubMcpUrl) {
+//   mcpServers.github = {
+//     url: new URL(smitheryGithubMcpUrl),
+//     ...(smitheryApiKey && {
+//       requestInit: {
+//         headers: {
+//           Authorization: `Bearer ${smitheryApiKey}`,
+//         },
+//       },
+//     }),
+//   };
+// }
 
 // Hacker News MCP server (corre localmente con npx)
 mcpServers.hackernews = {

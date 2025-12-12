@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
@@ -8,14 +9,6 @@ import { saveEmailFeedbackTool } from "../tools/save-email-feedback";
 
 const zapierMcpUrl = process.env.ZAPIER_MCP_URL;
 const zapierMcpToken = process.env.ZAPIER_MCP_API_KEY || process.env.ZAPIER_MCP_TOKEN;
-
-const githubMcpUrl =
-  process.env.SMITHERY_GITHUB_MCP_URL ||
-  (process.env.SMITHERY_API_KEY && process.env.SMITHERY_PROFILE
-    ? `https://server.smithery.ai/github/mcp?api_key=${encodeURIComponent(
-        process.env.SMITHERY_API_KEY,
-      )}&profile=${encodeURIComponent(process.env.SMITHERY_PROFILE)}`
-    : null);
 
 const mcpServers: Record<string, any> = {};
 
@@ -30,11 +23,6 @@ if (zapierMcpUrl && zapierMcpToken) {
   };
 }
 
-if (githubMcpUrl) {
-  mcpServers.github = {
-    url: new URL(githubMcpUrl),
-  };
-}
 
 const mcp = new MCPClient({
   servers: mcpServers,
@@ -49,7 +37,7 @@ const memory = new Memory({
   vector: new LibSQLVector({
     connectionUrl: "file:../../memory.db",
   }),
-  embedder: openai.embedding("text-embedding-3-small"),
+  embedder: google.textEmbeddingModel("text-embedding-004"),
   options: {
     lastMessages: 20,
     semanticRecall: {
@@ -85,17 +73,19 @@ export const wallyAgent = new Agent({
   name: "Wally Agent",
   description: "Asistente personal que puede enviar correos, revisar GitHub y añadir clima.",
   instructions: `
-Eres un asistente personal de Wally.
-- Puedes enviar y preparar correos vía las herramientas de Gmail (Zapier).
-- Puedes revisar repositorios con estrellas en GitHub mediante las herramientas disponibles.
-- Puedes obtener clima actual usando la herramienta de weather y adjuntarlo en correos si se pide.
-- Usa las herramientas de Hacker News para buscar y recuperar historias, obtener top stories y comentarios, y mantenerte al día con tendencias tech.
-- Después de enviar o preparar un correo, guarda feedback (puntaje, comentario, cuerpo) con la tool save-email-feedback cuando el usuario lo proporcione, para mejorar futuras respuestas.
-- Usa la working memory para recordar nombres, correos, preferencias y contexto del destinatario.
-- Confirma antes de enviar correos reales si falta información clave (destinatario, asunto, mensaje).
-- Mantén un tono profesional, conciso y amable.
+      Eres un asistente personal de Wally.
+      - Puedes enviar y preparar correos vía las herramientas de Gmail (Zapier).
+      - Puedes revisar y listar repositorios de GitHub mediante las herramientas disponibles con (Zapier).
+      - Puedes obtener clima actual usando la herramienta de weather y adjuntarlo en correos si se pide.
+      - Cuando consultes el clima, también puedes sugerir actividades apropiadas basadas en las condiciones climáticas (ej: clima soleado → actividades al aire libre, lluvia → actividades bajo techo, etc.).
+      - Usa las herramientas de Hacker News para buscar y recuperar historias, obtener top stories y comentarios, y mantenerte al día con tendencias tech.
+      - Después de enviar o preparar un correo, guarda feedback (puntaje, comentario, cuerpo) con la tool save-email-feedback cuando el usuario lo proporcione, para mejorar futuras respuestas.
+      - Tienes acceso a working memory para recordar información del usuario (nombres, correos, preferencias).
+      - IMPORTANTE: Solo llama updateWorkingMemory cuando el usuario EXPLÍCITAMENTE te pida que guardes/recuerdes información personal (ej: "recuerda que mi email es...", "guarda que prefiero..."). NO lo llames automáticamente en cada conversación.
+      - Confirma antes de enviar correos reales si falta información clave (destinatario, asunto, mensaje).
+      - Mantén un tono profesional, conciso y amable.
 `,
-  model: openai("gpt-4o"),
+  model: google("gemini-2.5-flash-lite"),
   tools: {
     ...mcpTools,
     weatherTool,
