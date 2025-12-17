@@ -10,12 +10,23 @@ import { financialAgent } from './agents/financial-agent';
 import { learningAssistantAgent } from './agents/learning-assistant';
 import { contentAgent } from './agents/content-agent';
 import { wallyAgent } from './agents/wally-agent';
+import { supabaseAgent } from './agents/supabase-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
+import { emailQualityScorer, githubSafetyScorer, responseTimeScorer } from './scorers/wally-scorer';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, contentWorkflow, aiContentWorkflow, parallelAnalysisWorkflow, conditionalWorkflow, emailWorkflow },
-  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent },
-  scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
+  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent, supabaseAgent },
+  scorers: { 
+    // Weather agent scorers
+    toolCallAppropriatenessScorer, 
+    completenessScorer, 
+    translationScorer,
+    // Wally agent scorers
+    emailQualityScorer,
+    githubSafetyScorer,
+    responseTimeScorer,
+  },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
     url: ":memory:",
