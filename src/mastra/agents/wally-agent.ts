@@ -6,6 +6,7 @@ import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
 import { MCPClient } from "@mastra/mcp";
 import { weatherTool } from "../tools/weather-tool";
 import { saveEmailFeedbackTool } from "../tools/save-email-feedback";
+import { wallyScorers } from "../scorers/wally-scorer";
 
 const zapierMcpUrl = process.env.ZAPIER_MCP_URL;
 const zapierMcpToken = process.env.ZAPIER_MCP_API_KEY || process.env.ZAPIER_MCP_TOKEN;
@@ -91,6 +92,7 @@ export const wallyAgent = new Agent({
       
       CORREO:
       - Puedes enviar y preparar correos vía las herramientas de Gmail (Zapier).
+      - Revisa si el email es adecuado para el contexto y el destinatario, Sobre todo el tono si debe ser formal o informal.
       - Confirma antes de enviar correos reales si falta información clave (destinatario, asunto, mensaje).
       - Después de enviar un correo, guarda feedback (puntaje, comentario, cuerpo) con la tool save-email-feedback cuando el usuario lo proporcione.
       
@@ -119,5 +121,28 @@ export const wallyAgent = new Agent({
     saveEmailFeedbackTool,
   },
   memory,
+  scorers: {
+    emailQuality: {
+      scorer: wallyScorers.emailQualityScorer,
+      sampling: {
+        type: 'ratio',
+        rate: 1, // Evalúa 100% de las interacciones
+      },
+    },
+    githubSafety: {
+      scorer: wallyScorers.githubSafetyScorer,
+      sampling: {
+        type: 'ratio',
+        rate: 1,
+      },
+    },
+    responseTime: {
+      scorer: wallyScorers.responseTimeScorer,
+      sampling: {
+        type: 'ratio',
+        rate: 1,
+      },
+    },
+  },
 });
 
