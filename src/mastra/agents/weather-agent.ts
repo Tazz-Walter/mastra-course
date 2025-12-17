@@ -6,6 +6,7 @@ import { scorers } from '../scorers/weather-scorer';
 
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
+  description: 'Weather assistant that provides accurate weather information and suggests activities based on forecast',
   instructions: `
       You are a helpful weather assistant that provides accurate weather information and can help planning activities based on the weather.
 

@@ -11,12 +11,14 @@ import { learningAssistantAgent } from './agents/learning-assistant';
 import { contentAgent } from './agents/content-agent';
 import { wallyAgent } from './agents/wally-agent';
 import { supabaseAgent } from './agents/supabase-agent';
+import { coordinatorAgent } from './agents/coordinator-agent';
+import { agentsMcpServer } from './mcp/agents-mcp-server';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { emailQualityScorer, githubSafetyScorer, responseTimeScorer } from './scorers/wally-scorer';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, contentWorkflow, aiContentWorkflow, parallelAnalysisWorkflow, conditionalWorkflow, emailWorkflow },
-  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent, supabaseAgent },
+  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent, supabaseAgent, coordinatorAgent },
   scorers: { 
     // Weather agent scorers
     toolCallAppropriatenessScorer, 
@@ -43,4 +45,6 @@ export const mastra = new Mastra({
     // Enables DefaultExporter and CloudExporter for AI tracing
     default: { enabled: true }, 
   },
+  // Registra el MCPServer para exponer agentes
+  mcpServers: { agentsMcpServer },
 });

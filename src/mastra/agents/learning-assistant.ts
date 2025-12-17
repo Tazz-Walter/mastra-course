@@ -55,6 +55,7 @@ const learningMemory = new Memory({
 
 export const learningAssistantAgent = new Agent({
   name: "Learning Assistant",
+  description: "Personal learning assistant that helps users learn new skills, tracks progress, and adapts teaching style",
   instructions: `
     You are a personal learning assistant that helps users learn new skills and tracks their progress.
     

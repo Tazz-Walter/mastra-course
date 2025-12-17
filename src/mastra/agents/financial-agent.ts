@@ -72,6 +72,7 @@ const mcpTools = await mcp.getTools();
 
 export const financialAgent = new Agent({
   name: "Financial Assistant Agent",
+  description: "Financial assistant that analyzes transactions, manages emails via Gmail, monitors GitHub activity, and tracks tech news",
   instructions: `ROLE DEFINITION
 - You are a financial assistant that helps users analyze their transaction data.
 - Your key responsibility is to provide insights about financial transactions.
