@@ -10,12 +10,13 @@ import { financialAgent } from './agents/financial-agent';
 import { learningAssistantAgent } from './agents/learning-assistant';
 import { contentAgent } from './agents/content-agent';
 import { wallyAgent } from './agents/wally-agent';
+import { supabaseAgent } from './agents/supabase-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { emailQualityScorer, githubSafetyScorer, responseTimeScorer } from './scorers/wally-scorer';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, contentWorkflow, aiContentWorkflow, parallelAnalysisWorkflow, conditionalWorkflow, emailWorkflow },
-  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent },
+  agents: { weatherAgent, financialAgent, learningAssistantAgent, contentAgent, wallyAgent, supabaseAgent },
   scorers: { 
     // Weather agent scorers
     toolCallAppropriatenessScorer, 
