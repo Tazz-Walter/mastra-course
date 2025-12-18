@@ -7,6 +7,7 @@ import { MCPClient } from "@mastra/mcp";
 import { weatherTool } from "../tools/weather-tool";
 import { saveEmailFeedbackTool } from "../tools/save-email-feedback";
 import { wallyScorers } from "../scorers/wally-scorer";
+import { balancedFallbackChain } from "../utils/model-with-fallback";
 
 const zapierMcpUrl = process.env.ZAPIER_MCP_URL;
 const zapierMcpToken = process.env.ZAPIER_MCP_API_KEY || process.env.ZAPIER_MCP_TOKEN;
@@ -54,11 +55,11 @@ const memory = new Memory({
   }),
   embedder: google.textEmbeddingModel("text-embedding-004"),
   options: {
-    lastMessages: 20,
+    lastMessages: 5, // Reducido de 20 para evitar exceder TPM en Groq
     semanticRecall: {
-      topK: 3,
+      topK: 1, // Reducido de 3 para menor contexto
       messageRange: {
-        before: 2,
+        before: 1, // Reducido de 2
         after: 1,
       },
     },
@@ -92,7 +93,41 @@ export const wallyAgent = new Agent({
       
       CORREO:
       - Puedes enviar y preparar correos vía las herramientas de Gmail (Zapier).
-      - Revisa si el email es adecuado para el contexto y el destinatario, Sobre todo el tono si debe ser formal o informal.
+      - **FORMATO PROFESIONAL OBLIGATORIO**:
+        * Usa saludo personalizado según contexto (Hola [Nombre] / Estimado/a [Nombre])
+        * Estructura el cuerpo en párrafos claros y separados
+        * Usa formato HTML/markdown: <b>, <i>, listas, líneas en blanco
+        * Termina con despedida apropiada y firma
+        * NO copies y pegues datos sin formato
+      
+      - **TONO ADAPTATIVO** (CRÍTICO):
+        * Informal/Casual: Para amigos, conocidos, contextos relajados
+          Ejemplo: "Hola Juancho, ¿Cómo va todo? Te paso el clima..."
+        * Formal/Profesional: Para jefes, clientes, contextos profesionales
+          Ejemplo: "Estimado Sr. López, Le comparto el reporte solicitado..."
+        * Auto-detecta del contexto o sigue instrucción explícita
+      
+      - **EJEMPLO DE EMAIL BIEN FORMATEADO**:
+        
+        Hola Juancho,
+        
+        ¿Cómo va todo? Te paso el reporte del clima que me pediste:
+        
+        🌡️ **Clima en Corrientes**
+        - Temperatura: 29°C (sensación térmica 30°C)
+        - Humedad: 32% - Viento: 13 km/h
+        - Condiciones: Cielo despejado ☀️
+        
+        Con este clima, te recomiendo:
+        1. Salir a caminar o andar en bici
+        2. Aprovechar para un picnic
+        3. Deportes acuáticos si estás cerca del río
+        
+        ¡Que disfrutes el día!
+        
+        Saludos,
+        Wally
+      
       - Confirma antes de enviar correos reales si falta información clave (destinatario, asunto, mensaje).
       - Después de enviar un correo, guarda feedback (puntaje, comentario, cuerpo) con la tool save-email-feedback cuando el usuario lo proporcione.
       
@@ -114,7 +149,7 @@ export const wallyAgent = new Agent({
       
       - Mantén un tono profesional, conciso y amable.
 `,
-  model: google("gemini-2.5-flash-lite"),
+  model: balancedFallbackChain, // Cadena balanceada: Groq (70B) → Gemini → OpenAI
   tools: {
     ...mcpTools,
     weatherTool,

@@ -3,6 +3,7 @@ import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
 import { MCPClient } from "@mastra/mcp";
+import { balancedFallbackChain } from "../utils/model-with-fallback";
 
 const supabaseAccessToken = process.env.SUPABASE_ACCESS_TOKEN;
 const supabaseProjectRef = process.env.SUPABASE_PROJECT_REF;
@@ -110,7 +111,7 @@ export const supabaseAgent = new Agent({
       - Mantén un tono profesional, técnico pero accesible.
       - Si no estás seguro de algo, di "necesito más contexto sobre X" en vez de adivinar.
 `,
-  model: google("gemini-2.5-flash-lite"),
+  model: balancedFallbackChain, // Cadena balanceada: Groq (70B) → Gemini → OpenAI
   tools: {
     ...mcpTools,
   },

@@ -193,7 +193,7 @@ export const toneScorer = createScorer({
     outputSchema: z.object({
       isProfessional: z.boolean(),
       isFriendly: z.boolean(),
-      confidence: z.number().min(0).max(1),
+      confidence: z.number().min(0).optional().max(1),
     }),
     createPrompt: ({ results }) => `
       Evalúa el tono de esta respuesta:

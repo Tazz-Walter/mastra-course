@@ -1,4 +1,5 @@
 import { google } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
@@ -9,6 +10,7 @@ import {
   delegateToWeatherTool, 
   delegateToSupabaseTool 
 } from "../tools/delegate-to-agent";
+import { freeTierMaxFallbackChain } from "../utils/model-with-fallback";
 
 /**
  * Coordinator Agent (Meta-Agent)
@@ -46,16 +48,16 @@ const coordinatorMemory = new Memory({
   vector: new LibSQLVector({
     connectionUrl: "file:../../memory.db",
   }),
-  embedder: google.textEmbeddingModel("text-embedding-004"),
+  embedder: google.textEmbeddingModel("text-embedding-004"), // Embeddings con Gemini
   options: {
-    // Mantiene los últimos 30 mensajes (más que otros agentes, para mejor coordinación)
-    lastMessages: 30,
+    // Mantiene los últimos 15 mensajes (reducido para evitar exceder TPM)
+    lastMessages: 15,
     // Habilita búsqueda semántica para recordar tareas previas similares
     semanticRecall: {
-      topK: 5, // Más contexto para mejor coordinación
+      topK: 3, // Reducido para menor contexto
       messageRange: {
-        before: 3,
-        after: 2,
+        before: 2,
+        after: 1,
       },
     },
     // Habilita working memory para recordar preferencias de coordinación
@@ -114,6 +116,8 @@ export const coordinatorAgent = new Agent({
       - Analiza la solicitud del usuario
       - Identifica QUÉ agentes necesitas para completar la tarea
       - Delega subtareas a los agentes apropiados
+      - **REVISA LA CALIDAD** del output antes de aprobar
+      - Si el resultado no cumple estándares, devuélvelo con feedback específico
       - Combina los resultados en una respuesta coherente
       - Coordina flujos multi-agente cuando sea necesario
       
@@ -139,16 +143,43 @@ export const coordinatorAgent = new Agent({
       - **delegateToWeatherTool**: Usa esta herramienta para delegar tareas a weatherAgent (clima detallado, pronósticos)
       - **delegateToSupabaseTool**: Usa esta herramienta para delegar tareas a supabaseAgent (bases de datos, SQL)
       
+      REVISIÓN DE CALIDAD (CRÍTICO):
+      Antes de aprobar cualquier output, especialmente emails, verifica:
+      
+      ✅ **Emails**:
+         - Tiene formato profesional (saludo, cuerpo estructurado, despedida)
+         - El tono es apropiado al destinatario (informal para amigos, formal para jefes/clientes)
+         - Usa formato HTML o markdown (párrafos, listas, negritas)
+         - Incluye personalización (no copy-paste directo)
+         - Tiene estructura clara con separación de secciones
+         
+      ✅ **Datos técnicos** (clima, schemas, queries):
+         - Formato legible y bien estructurado
+         - Información completa y relevante
+         - Presentación profesional
+      
+      ❌ **SI EL OUTPUT NO CUMPLE ESTÁNDARES**:
+         1. NO lo apruebes directamente
+         2. Delega de nuevo con instrucciones ESPECÍFICAS:
+            "El email anterior es muy copy-paste. Reescríbelo con:
+            - Formato HTML/markdown profesional
+            - Tono [formal/informal] apropiado para [destinatario]
+            - Párrafos bien separados
+            - Personalización y contexto"
+         3. Itera hasta 2 veces máximo
+         4. Si aún no mejora, informa al usuario del problema
+      
       IMPORTANTE:
       - NO solo planifiques, EJECUTA usando las herramientas de delegación
       - Llama a las herramientas delegate-to-* para invocar a los agentes especializados
       - Espera el resultado de cada delegación antes de continuar
-      - Si un agente falla, intenta con estrategias alternativas
+      - **REVISA cada output antes de presentarlo al usuario**
+      - Si un agente falla o da output de baja calidad, solicita correcciones
       - Resume los resultados de forma clara para el usuario
       
       - Mantén un tono profesional y proactivo.
   `,
-  model: google("gemini-2.5-flash-lite"),
+  model: freeTierMaxFallbackChain, // Cadena de 4 modelos gratuitos: Gemini → Groq (70B) → Groq (Mixtral) → OpenAI
   tools: {
     // Herramientas para delegar a agentes especializados
     delegateToWallyTool,
