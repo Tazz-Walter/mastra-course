@@ -264,7 +264,7 @@ export const sentimentStep = createStep({
   }),
   outputSchema: z.object({
     sentiment: z.enum(["positive", "neutral", "negative"]),
-    confidence: z.number(),
+    confidence: z.number().optional().default(0.8),
   }),
   execute: async ({ inputData }) => {
     console.log("😊 Running sentiment analysis...");
@@ -456,7 +456,7 @@ export const parallelAnalysisWorkflow = createWorkflow({
       }),
       sentiment: z.object({
         sentiment: z.enum(["positive", "neutral", "negative"]),
-        confidence: z.number(),
+        confidence: z.number().optional().default(0.8),
       }),
     }),
   }),
@@ -477,7 +477,7 @@ export const parallelAnalysisWorkflow = createWorkflow({
         }),
         "sentiment-analysis": z.object({
           sentiment: z.enum(["positive", "neutral", "negative"]),
-          confidence: z.number(),
+          confidence: z.number().optional().default(0.8),
         }),
       }),
       outputSchema: z.object({
@@ -492,7 +492,7 @@ export const parallelAnalysisWorkflow = createWorkflow({
           }),
           sentiment: z.object({
             sentiment: z.enum(["positive", "neutral", "negative"]),
-            confidence: z.number(),
+            confidence: z.number().optional().default(0.8),
           }),
         }),
       }),

@@ -36,8 +36,8 @@ export const translationScorer = createScorer({
     outputSchema: z.object({
       nonEnglish: z.boolean(),
       translated: z.boolean(),
-      confidence: z.number().min(0).max(1).default(1),
-      explanation: z.string().default(''),
+      confidence: z.number().min(0).max(1).optional().default(1),
+      explanation: z.string().optional().default(''),
     }),
     createPrompt: ({ results }) => `
             You are evaluating if a weather assistant correctly handled translation of a non-English location.
